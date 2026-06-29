@@ -1,869 +1,170 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>STRIGYNOVA HAIRCOLOR — Ваш подарок</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --milk:    #FAFAF8;
-    --cream:   #F2EDE6;
-    --gold:    #C4A97A;
-    --gold-lt: #E8D9BC;
-    --stone:   #9E9188;
-    --graphite:#3D3935;
-    --ink:     #1A1816;
-    --white:   #FFFFFF;
-  }
-
-  html, body {
-    height: 100%;
-    background: var(--milk);
-    color: var(--ink);
-    font-family: 'Inter', sans-serif;
-    font-weight: 300;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-  }
-
-  /* ── CANVAS ── */
-  #confetti-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 999;
-  }
-
-  /* ── SCREENS ── */
-  .screen {
-    display: none;
-    min-height: 100dvh;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 24px 48px;
-  }
-  .screen.active { display: flex; }
-
-  /* ── HEADER ── */
-  .site-header {
-    width: 100%;
-    padding: 36px 0 28px;
-    text-align: center;
-  }
-  .brand-eyebrow {
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--stone);
-    margin-bottom: 8px;
-  }
-  .brand-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 400;
-    letter-spacing: 0.12em;
-    color: var(--ink);
-    line-height: 1.2;
-  }
-  .brand-divider {
-    width: 40px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    margin: 16px auto 0;
-  }
-
-  /* ── HERO TEXT ── */
-  .hero-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(26px, 7vw, 34px);
-    font-weight: 500;
-    line-height: 1.25;
-    text-align: center;
-    color: var(--ink);
-    margin-top: 8px;
-  }
-  .hero-title em {
-    font-style: italic;
-    color: var(--gold);
-  }
-
-  .hero-sub {
-    font-size: 13px;
-    color: var(--stone);
-    line-height: 1.75;
-    text-align: center;
-    margin-top: 20px;
-    max-width: 320px;
-  }
-  .hero-sub p { margin-bottom: 6px; }
-
-  /* ── GIFT BOX ── */
-  .box-wrapper {
-    margin: 36px auto 8px;
-    width: 200px;
-    height: 200px;
-    position: relative;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .box-wrapper:hover .box-body { transform: translateY(-4px); }
-
-  .box-scene {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* shadow */
-  .box-shadow {
-    position: absolute;
-    bottom: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 140px;
-    height: 16px;
-    background: radial-gradient(ellipse, rgba(0,0,0,0.18) 0%, transparent 70%);
-    transition: all 0.5s ease;
-  }
-
-  /* lid */
-  .box-lid {
-    position: absolute;
-    top: 0; left: 0;
-    width: 200px;
-    height: 60px;
-    transform-origin: top center;
-    transition: transform 0.7s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.5s ease;
-    z-index: 2;
-  }
-  .box-lid svg { width: 100%; height: 100%; }
-
-  /* body */
-  .box-body {
-    position: absolute;
-    top: 48px; left: 0;
-    width: 200px;
-    height: 152px;
-    transition: transform 0.5s ease;
-    z-index: 1;
-  }
-  .box-body svg { width: 100%; height: 100%; }
-
-  /* ribbon vertical */
-  .box-ribbon-v {
-    position: absolute;
-    top: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
-    height: 200px;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 50%, var(--gold) 100%);
-    z-index: 3;
-    border-radius: 2px;
-    transition: opacity 0.3s;
-  }
-  .box-ribbon-h {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    width: 200px;
-    height: 20px;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 50%, var(--gold) 100%);
-    z-index: 3;
-    border-radius: 2px;
-    transition: opacity 0.3s;
-  }
-  /* bow */
-  .box-bow {
-    position: absolute;
-    top: -28px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 4;
-    transition: opacity 0.3s, transform 0.5s;
-  }
-
-  /* pulse animation */
-  @keyframes pulse-box {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.04); }
-  }
-  .box-wrapper.idle .box-scene {
-    animation: pulse-box 2.8s ease-in-out infinite;
-  }
-
-  /* open animation */
-  @keyframes lid-fly {
-    0%   { transform: rotateX(0deg) translateY(0px); opacity: 1; }
-    30%  { transform: rotateX(-45deg) translateY(-20px); opacity: 1; }
-    60%  { transform: rotateX(-90deg) translateY(-60px) scale(0.9); opacity: 0.7; }
-    100% { transform: rotateX(-120deg) translateY(-120px) scale(0.7); opacity: 0; }
-  }
-  .box-wrapper.opened .box-lid {
-    animation: lid-fly 0.7s cubic-bezier(0.4,0,0.2,1) forwards;
-    pointer-events: none;
-  }
-  .box-wrapper.opened .box-bow { opacity: 0; transform: translateX(-50%) translateY(-40px); }
-  .box-wrapper.opened .box-ribbon-v { opacity: 0; }
-  .box-wrapper.opened .box-ribbon-h { opacity: 0; }
-  .box-wrapper.opened .box-shadow {
-    width: 80px;
-    opacity: 0.5;
-  }
-
-  /* glow from inside */
-  @keyframes glow-out {
-    0% { opacity: 0; transform: translateX(-50%) scale(0.5); }
-    40% { opacity: 1; }
-    100% { opacity: 0; transform: translateX(-50%) scale(2.5); }
-  }
-  .box-glow {
-    position: absolute;
-    top: 40px; left: 50%;
-    transform: translateX(-50%);
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(196,169,122,0.6) 0%, transparent 70%);
-    pointer-events: none;
-    opacity: 0;
-    z-index: 5;
-  }
-  .box-wrapper.opened .box-glow {
-    animation: glow-out 1.0s ease-out 0.3s forwards;
-  }
-
-  .tap-hint {
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--stone);
-    margin-top: 12px;
-    opacity: 0.8;
-    transition: opacity 0.3s;
-  }
-  .box-wrapper.opened + .tap-hint { opacity: 0; }
-
-  /* ── GIFT CARD ── */
-  .gift-card {
-    background: var(--white);
-    border: 1px solid var(--gold-lt);
-    border-radius: 20px;
-    padding: 36px 28px;
-    width: 100%;
-    max-width: 360px;
-    text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.08), 0 4px 16px rgba(196,169,122,0.12);
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.34,1.2,0.64,1);
-  }
-  .gift-card.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .gift-card-eyebrow {
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 10px;
-  }
-  .gift-card-congrats {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
-    font-style: italic;
-    color: var(--ink);
-    margin-bottom: 20px;
-  }
-  .gift-card-divider {
-    width: 32px;
-    height: 1px;
-    background: var(--gold-lt);
-    margin: 0 auto 20px;
-  }
-  .gift-card-label {
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--stone);
-    margin-bottom: 8px;
-  }
-  .gift-card-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--ink);
-    line-height: 1.3;
-    margin-bottom: 24px;
-  }
-
-  .gift-code-badge {
-    display: inline-block;
-    background: var(--cream);
-    border: 1px solid var(--gold-lt);
-    border-radius: 8px;
-    padding: 10px 20px;
-    margin-bottom: 20px;
-  }
-  .gift-code-badge span {
-    font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    color: var(--graphite);
-  }
-
-  .gift-card-note {
-    font-size: 12px;
-    color: var(--stone);
-    line-height: 1.6;
-    margin-bottom: 0;
-  }
-
-  .screenshot-hint {
-    background: linear-gradient(135deg, #FFF9F0, #FFF3E0);
-    border: 1px solid var(--gold-lt);
-    border-radius: 12px;
-    padding: 14px 18px;
-    margin-top: 16px;
-    font-size: 12px;
-    color: var(--graphite);
-    line-height: 1.6;
-    text-align: center;
-  }
-  .screenshot-hint strong { color: var(--ink); }
-
-  /* ── TIMER ── */
-  .timer-block {
-    margin-top: 24px;
-    width: 100%;
-    max-width: 360px;
-    text-align: center;
-  }
-  .timer-label {
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--stone);
-    margin-bottom: 10px;
-  }
-  .timer-digits {
-    font-family: 'Playfair Display', serif;
-    font-size: 38px;
-    font-weight: 400;
-    color: var(--ink);
-    letter-spacing: 0.06em;
-  }
-  .timer-digits.urgent { color: #B85C5C; }
-  .timer-sub {
-    font-size: 11px;
-    color: var(--stone);
-    margin-top: 4px;
-  }
-
-  /* progress bar */
-  .timer-bar-track {
-    width: 100%;
-    height: 2px;
-    background: var(--cream);
-    border-radius: 2px;
-    margin: 12px 0;
-    overflow: hidden;
-  }
-  .timer-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold), var(--gold-lt));
-    border-radius: 2px;
-    transition: width 1s linear;
-  }
-
-  /* ── BUTTONS ── */
-  .btn-primary {
-    display: block;
-    width: 100%;
-    max-width: 360px;
-    padding: 18px 24px;
-    background: var(--ink);
-    color: var(--milk);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    text-decoration: none;
-    text-align: center;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    margin-top: 16px;
-    transition: background 0.25s, transform 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn-primary:active { transform: scale(0.97); }
-  .btn-primary:hover { background: var(--graphite); }
-
-  .btn-secondary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    max-width: 360px;
-    padding: 16px 24px;
-    background: transparent;
-    color: var(--graphite);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: 0.08em;
-    text-decoration: none;
-    text-align: center;
-    border: 1px solid #D9D2C8;
-    border-radius: 14px;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: border-color 0.25s, transform 0.15s, background 0.25s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn-secondary:active { transform: scale(0.97); }
-  .btn-secondary:hover { border-color: var(--gold); background: var(--cream); }
-
-  /* ── EXPIRED SCREEN ── */
-  .expired-icon {
-    font-size: 56px;
-    margin: 48px 0 20px;
-    opacity: 0.4;
-  }
-  .expired-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 24px;
-    font-style: italic;
-    text-align: center;
-    color: var(--ink);
-    margin-bottom: 12px;
-  }
-  .expired-text {
-    font-size: 14px;
-    color: var(--stone);
-    text-align: center;
-    line-height: 1.7;
-    max-width: 280px;
-  }
-
-  /* ── FOOTER ── */
-  .site-footer {
-    margin-top: auto;
-    padding-top: 40px;
-    font-size: 10px;
-    color: var(--stone);
-    letter-spacing: 0.1em;
-    text-align: center;
-    opacity: 0.6;
-  }
-
-  /* ── RESULT SCREEN layout ── */
-  #screen-result {
-    padding-top: 0;
-  }
-  #screen-result .site-header {
-    padding-top: 28px;
-    padding-bottom: 16px;
-  }
-
-  /* reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .box-wrapper.idle .box-scene { animation: none; }
-    .box-wrapper.opened .box-lid { animation: none; opacity: 0; }
-    .gift-card { transition: opacity 0.3s; }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0a09" />
+  <title>STRIGYNOVA HAIRCOLOR — подарок при записи</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --black:#0b0a09; --ink:#181512; --graphite:#302b26; --milk:#f7f2ea; --paper:#fffaf2;
+      --soft:#e6ded1; --taupe:#a89a89; --gold:#c9aa70; --gold2:#ead7ac; --danger:#a84c45;
+      --shadow:0 26px 80px rgba(0,0,0,.25); --softShadow:0 18px 45px rgba(55,43,26,.12);
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--milk);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    img{max-width:100%;display:block}.screen{min-height:100svh}.hidden{display:none!important}.container{width:min(1120px,calc(100% - 40px));margin-inline:auto}.serif{font-family:'Playfair Display',serif}.gold{color:var(--gold)}
+    .brand{letter-spacing:.18em;text-transform:uppercase}.brand strong{display:block;font-family:'Playfair Display',serif;font-size:clamp(28px,8vw,54px);font-weight:500;letter-spacing:.16em;line-height:.9}.brand span{display:block;margin-top:10px;font-size:12px;letter-spacing:.42em;color:rgba(255,255,255,.72)}
+    .hero{position:relative;min-height:100svh;background:#080706;color:white;display:grid;align-items:end;overflow:hidden}.hero-bg{position:absolute;inset:0;background-image:linear-gradient(90deg,rgba(5,4,3,.9) 0%,rgba(5,4,3,.55) 40%,rgba(5,4,3,.1) 72%),url('assets/blonde-bouquet.jpg');background-size:cover;background-position:64% center;transform:scale(1.02)}.hero::after{content:"";position:absolute;inset:auto 0 0;height:38%;background:linear-gradient(0deg,#080706 4%,transparent)}.hero-inner{position:relative;z-index:2;padding:34px 0 58px}.hero-top{position:absolute;z-index:3;top:28px;left:24px}.eyebrow{font-size:11px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;color:var(--gold2)}h1{font-family:'Playfair Display',serif;font-weight:500;font-size:clamp(48px,13vw,92px);line-height:.96;letter-spacing:-.045em;margin:18px 0}.hero-text{max-width:520px;font-size:16px;line-height:1.8;color:rgba(255,255,255,.78)}.scroll{margin-top:28px;color:rgba(255,255,255,.65);font-size:12px;letter-spacing:.18em;text-transform:uppercase}
+    .section{padding:78px 0}.intro{background:linear-gradient(180deg,#080706 0%,#17120f 100%);color:white}.intro-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center}.intro h2,.gift h2,.master h2{font-family:'Playfair Display',serif;font-size:clamp(36px,9vw,64px);font-weight:500;line-height:1;margin:0 0 18px}.intro p,.gift p,.master p{line-height:1.75;color:rgba(255,255,255,.72);font-size:15px}.photo-stack{display:grid;grid-template-columns:1fr 1fr;gap:14px}.photo-card{border-radius:26px;overflow:hidden;background:#211b17;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.08)}.photo-card img{width:100%;height:370px;object-fit:cover}.photo-card:nth-child(2){margin-top:50px}.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}.chip{border:1px solid rgba(201,170,112,.35);color:var(--gold2);border-radius:999px;padding:10px 14px;font-size:12px;letter-spacing:.05em}
+    .gift{position:relative;background:radial-gradient(circle at 20% 0%,#fff9ef 0,#f4eddf 38%,#ebe1d2 100%);overflow:hidden}.gift::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.5),transparent 35%,rgba(201,170,112,.12));pointer-events:none}.gift-head{text-align:center;position:relative;z-index:2;margin-bottom:34px}.gift-head p{color:#756958;margin:0 auto;max-width:520px}.envelope-wrap{position:relative;z-index:2;display:grid;place-items:center}.envelope{width:min(520px,92vw);height:310px;position:relative;cursor:pointer;filter:drop-shadow(0 30px 42px rgba(60,45,27,.23));transition:transform .25s ease;-webkit-tap-highlight-color:transparent}.envelope:hover{transform:translateY(-4px)}.env-body,.env-flap,.env-letter{position:absolute;inset:0;border-radius:10px}.env-body{background:linear-gradient(135deg,#fffdf8,#efe4d3);border:1px solid rgba(145,117,76,.22);overflow:hidden}.env-body:before,.env-body:after{content:"";position:absolute;inset:0}.env-body:before{clip-path:polygon(0 0,50% 54%,100% 0,100% 100%,0 100%);background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(198,174,134,.22))}.env-body:after{clip-path:polygon(0 100%,50% 45%,100% 100%);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(174,143,96,.18))}.env-flap{transform-origin:top;clip-path:polygon(0 0,100% 0,50% 56%);background:linear-gradient(180deg,#fffaf2,#e8dac5);border:1px solid rgba(145,117,76,.2);z-index:4;transition:transform .8s cubic-bezier(.2,.9,.25,1.2)}.seal{position:absolute;z-index:6;left:50%;top:50%;transform:translate(-50%,-50%);width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#ead7ac,#c89d53 68%,#8a612b);box-shadow:0 12px 22px rgba(95,62,20,.38),inset 0 2px 0 rgba(255,255,255,.45);color:#5b3a13;font-family:'Playfair Display',serif;font-style:italic;font-size:16px;text-align:center;line-height:1.05;transition:transform .55s ease,opacity .35s}.env-letter{width:86%;height:78%;left:7%;top:12%;background:var(--paper);border-radius:18px;border:1px solid rgba(201,170,112,.32);display:grid;place-items:center;text-align:center;padding:26px;z-index:2;transform:translateY(72px) scale(.96);opacity:0;transition:all .85s cubic-bezier(.2,.9,.2,1.1);box-shadow:0 18px 40px rgba(38,27,13,.16)}.env-letter .mini-brand{font-family:'Playfair Display',serif;letter-spacing:.18em;font-size:22px}.envelope.open .env-flap{transform:rotateX(178deg)}.envelope.open .seal{transform:translate(-50%,-50%) scale(.15) rotate(18deg);opacity:0}.envelope.open .env-letter{transform:translateY(-95px) scale(1);opacity:1;z-index:5}.open-hint{text-align:center;margin-top:24px;color:#786c5d;font-size:13px;letter-spacing:.12em;text-transform:uppercase}.terms{margin:42px auto 0;max-width:720px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;position:relative;z-index:2}.term{background:rgba(255,255,255,.55);backdrop-filter:blur(14px);border:1px solid rgba(201,170,112,.26);border-radius:20px;padding:18px;color:#64594c;font-size:13px;line-height:1.55}.term b{display:block;color:var(--ink);margin-bottom:7px}
+    .result{background:radial-gradient(circle at 80% 0%,#382916 0,#0b0a09 42%,#050505 100%);color:white;position:relative;overflow:hidden}.result:before{content:"";position:absolute;inset:0;background-image:url('assets/logo-dark.jpg');background-size:cover;background-position:center;opacity:.16;filter:blur(1px)}.result .container{position:relative;z-index:2;min-height:100svh;display:grid;align-items:center;padding:60px 0}.result-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:46px;align-items:center}.result-copy h2{font-family:'Playfair Display',serif;font-size:clamp(34px,9vw,64px);font-weight:500;line-height:1.05;margin:0 0 18px}.result-copy p{color:rgba(255,255,255,.74);line-height:1.75}.result-icons{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:26px}.result-icon{border:1px solid rgba(201,170,112,.32);border-radius:18px;padding:14px;color:rgba(255,255,255,.82);font-size:12px}.gift-card{position:relative;background:linear-gradient(145deg,rgba(255,250,242,.96),rgba(239,228,211,.94));color:var(--ink);border-radius:30px;padding:36px 28px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.75);overflow:hidden}.gift-card:before{content:"";position:absolute;inset:-40%;background:linear-gradient(120deg,transparent 35%,rgba(255,255,255,.55),transparent 65%);transform:rotate(18deg);animation:shine 5s ease-in-out infinite}.gift-card>*{position:relative}@keyframes shine{0%,55%{transform:translateX(-45%) rotate(18deg)}100%{transform:translateX(45%) rotate(18deg)}}.card-brand{font-family:'Playfair Display',serif;letter-spacing:.22em;font-size:22px;margin-bottom:14px}.card-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.3em;color:#9b8152;margin:18px 0 12px}.gift-name{font-family:'Playfair Display',serif;font-size:clamp(30px,8vw,48px);line-height:1.05;margin:0 auto 18px;max-width:460px}.gift-code{display:inline-flex;padding:10px 16px;border:1px solid rgba(201,170,112,.4);border-radius:999px;background:rgba(255,255,255,.48);font-size:13px;font-weight:600;letter-spacing:.13em}.timer{margin-top:24px}.timer-label{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:#8b7b63}.timer-digits{font-family:'Playfair Display',serif;font-size:42px;letter-spacing:.04em;margin-top:6px}.timer-digits.urgent{color:var(--danger)}.bar{height:3px;background:#e3d4bd;border-radius:999px;overflow:hidden;margin:14px 0}.bar span{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#8f6b32);width:100%;transition:width 1s linear}.notice{font-size:13px;line-height:1.6;color:#6b5f51;background:rgba(255,255,255,.52);border-radius:18px;padding:14px;margin-top:18px}.actions{margin-top:18px;display:grid;gap:10px}.btn{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;border:none;border-radius:16px;min-height:56px;padding:15px 18px;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}.btn-primary{background:var(--ink);color:var(--paper)}.btn-secondary{background:transparent;color:var(--ink);border:1px solid rgba(24,21,18,.22)}
+    .master{background:#f5efe5;color:var(--ink)}.master-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:42px;align-items:center}.master-photo{border-radius:28px;overflow:hidden;box-shadow:var(--softShadow);border:1px solid rgba(255,255,255,.7)}.master-photo img{height:520px;width:100%;object-fit:cover;object-position:center 42%}.master p{color:#615648}.features{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}.feature{border:1px solid rgba(201,170,112,.28);border-radius:20px;padding:18px;background:rgba(255,255,255,.42);font-size:13px;color:#5e5143}.feature b{display:block;margin-bottom:6px;color:var(--ink)}.final-cta{padding:58px 0;background:#0b0a09;color:white;text-align:center}.final-cta h2{font-family:'Playfair Display',serif;font-size:clamp(34px,9vw,58px);font-weight:500;line-height:1;margin:0 0 14px}.final-cta p{color:rgba(255,255,255,.7);margin-bottom:22px}.final-cta .btn{max-width:420px;margin:0 auto;background:linear-gradient(90deg,#c9aa70,#ead7ac);color:#271b0e}
+    .expired{display:grid;place-items:center;min-height:100svh;background:#0b0a09;color:white;text-align:center;padding:30px}.expired-card{max-width:430px}.expired h1{font-size:44px}.expired p{color:rgba(255,255,255,.72);line-height:1.7}
+    #confetti{position:fixed;inset:0;pointer-events:none;z-index:30}.fade-in{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}.fade-in.in{opacity:1;transform:none}
+    @media (max-width:760px){.container{width:calc(100% - 32px)}.hero{min-height:100svh}.hero-bg{background-image:linear-gradient(180deg,rgba(5,4,3,.46) 0%,rgba(5,4,3,.18) 38%,rgba(5,4,3,.98) 78%),url('assets/blonde-bouquet.jpg');background-position:58% top;background-size:cover}.hero-inner{padding-bottom:42px}.hero-top{top:24px;left:20px}.brand strong{font-size:30px}.brand span{font-size:10px}h1{font-size:clamp(54px,17vw,76px);max-width:360px}.hero-text{font-size:14px;max-width:330px}.section{padding:62px 0}.intro-grid,.result-grid,.master-grid{grid-template-columns:1fr;gap:28px}.photo-card img{height:300px}.photo-card:nth-child(2){margin-top:26px}.terms{grid-template-columns:1fr}.envelope{height:230px}.seal{width:78px;height:78px;font-size:14px}.envelope.open .env-letter{transform:translateY(-68px) scale(1)}.result .container{padding:42px 0}.result-copy{display:none}.gift-card{padding:30px 18px;border-radius:26px}.gift-name{font-size:34px}.features{grid-template-columns:1fr}.master-photo img{height:430px}.btn{font-size:11px}.scroll{display:none}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+  </style>
 </head>
 <body>
+  <canvas id="confetti"></canvas>
 
-<canvas id="confetti-canvas"></canvas>
-
-<!-- ══════════════════════════════════════════
-     SCREEN 1: LANDING
-══════════════════════════════════════════ -->
-<div class="screen active" id="screen-landing">
-
-  <header class="site-header">
-    <div class="brand-eyebrow">Studio</div>
-    <div class="brand-name">STRIGYNOVA<br>HAIRCOLOR</div>
-    <div class="brand-divider"></div>
-  </header>
-
-  <h1 class="hero-title">Ваш подарок<br>при записи на <em>июль</em><br>и <em>август</em></h1>
-
-  <p class="hero-sub">
-    <p>Нажмите на подарочную коробку — сайт случайно выберет ваш подарок.</p>
-    <p>Подарок можно получить только один раз.</p>
-    <p>Чтобы сохранить подарок, оформите запись в течение <strong>24 часов</strong>.</p>
-    <p>Записаться можно на любую свободную дату в июле или августе.</p>
-  </p>
-
-  <!-- GIFT BOX -->
-  <div class="box-wrapper idle" id="giftBox" onclick="openBox()">
-    <div class="box-scene">
-
-      <!-- Bow SVG -->
-      <div class="box-bow">
-        <svg width="80" height="52" viewBox="0 0 80 52" fill="none">
-          <!-- left loop -->
-          <path d="M40 26 Q20 0 4 8 Q-4 16 10 22 Q24 28 40 26Z" fill="#C4A97A"/>
-          <path d="M40 26 Q20 4 6 10 Q0 16 12 21 Q26 26 40 26Z" fill="#E8D9BC"/>
-          <!-- right loop -->
-          <path d="M40 26 Q60 0 76 8 Q84 16 70 22 Q56 28 40 26Z" fill="#C4A97A"/>
-          <path d="M40 26 Q60 4 74 10 Q80 16 68 21 Q54 26 40 26Z" fill="#E8D9BC"/>
-          <!-- knot -->
-          <ellipse cx="40" cy="26" rx="7" ry="6" fill="#C4A97A"/>
-          <ellipse cx="40" cy="25" rx="5" ry="4" fill="#E8D9BC"/>
-          <!-- tails -->
-          <path d="M36 30 Q32 44 28 50" stroke="#C4A97A" stroke-width="4" stroke-linecap="round" fill="none"/>
-          <path d="M44 30 Q48 44 52 50" stroke="#C4A97A" stroke-width="4" stroke-linecap="round" fill="none"/>
-        </svg>
+  <main id="landing">
+    <section class="hero screen">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="hero-top brand"><strong>STRIGYNOVA</strong><span>HAIRCOLOR</span></div>
+      <div class="container hero-inner">
+        <div class="eyebrow fade-in">Ваш подарок уже ждёт вас</div>
+        <h1 class="fade-in">Красивые волосы начинаются с <span class="gold"><em>заботы о себе</em></span></h1>
+        <p class="hero-text fade-in">При записи на июль или август вы можете открыть персональный подарок. Выбор работает один раз, а подарок сохраняется только при записи в течение 24 часов.</p>
+        <div class="scroll fade-in">Прокрутите вниз</div>
       </div>
+    </section>
 
-      <!-- Lid SVG -->
-      <div class="box-lid">
-        <svg viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0" y="8" width="200" height="52" rx="4" fill="#F2EDE6"/>
-          <rect x="0" y="8" width="200" height="52" rx="4" stroke="#D9D0C2" stroke-width="1"/>
-          <!-- shadow under lid -->
-          <rect x="4" y="56" width="192" height="4" rx="2" fill="rgba(0,0,0,0.06)"/>
-        </svg>
+    <section class="intro section">
+      <div class="container intro-grid">
+        <div class="fade-in">
+          <div class="eyebrow">STRIGYNOVA HAIRCOLOR</div>
+          <h2>Цвет, стрижка и уход, которые выглядят дорого каждый день.</h2>
+          <p>Светлана работает со стрижками, сложными окрашиваниями и уходами для волос. Акция создана для записей на июль и август: откройте конверт, сохраните подарок и оформите запись.</p>
+          <div class="chips"><span class="chip">Окрашивание</span><span class="chip">Стрижки</span><span class="chip">Уход для волос</span></div>
+        </div>
+        <div class="photo-stack fade-in">
+          <div class="photo-card"><img src="assets/waves-face.jpg" alt="Работа Светланы: мягкие волны и блонд"></div>
+          <div class="photo-card"><img src="assets/red-curls.jpg" alt="Работа Светланы: рыжие локоны"></div>
+        </div>
       </div>
+    </section>
 
-      <!-- Body SVG -->
-      <div class="box-body">
-        <svg viewBox="0 0 200 152" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- main box -->
-          <rect width="200" height="148" rx="4" fill="#F2EDE6"/>
-          <rect width="200" height="148" rx="4" stroke="#D9D0C2" stroke-width="1"/>
-          <!-- side shading -->
-          <rect x="0" y="0" width="16" height="148" rx="4" fill="rgba(0,0,0,0.04)"/>
-          <rect x="184" y="0" width="16" height="148" rx="4" fill="rgba(0,0,0,0.04)"/>
-          <!-- bottom face -->
-          <rect x="0" y="144" width="200" height="8" rx="3" fill="rgba(0,0,0,0.07)"/>
-          <!-- subtle pattern -->
-          <line x1="0" y1="36" x2="200" y2="36" stroke="#D9D0C2" stroke-width="0.5" opacity="0.5"/>
-          <line x1="0" y1="72" x2="200" y2="72" stroke="#D9D0C2" stroke-width="0.5" opacity="0.5"/>
-          <line x1="0" y1="108" x2="200" y2="108" stroke="#D9D0C2" stroke-width="0.5" opacity="0.5"/>
-        </svg>
+    <section class="gift section" id="gift-section">
+      <div class="container">
+        <div class="gift-head fade-in">
+          <div class="eyebrow">Откройте подарок</div>
+          <h2>У вас есть конверт</h2>
+          <p>Нажмите на конверт один раз. Сайт случайно выберет подарок и запустит таймер на 24 часа.</p>
+        </div>
+        <div class="envelope-wrap fade-in">
+          <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Открыть подарок">
+            <div class="env-letter"><div><div class="mini-brand">STRIGYNOVA</div><div class="card-eyebrow">Ваш подарок</div></div></div>
+            <div class="env-body"></div><div class="env-flap"></div><div class="seal">Для вас<br>♡</div>
+          </div>
+          <div class="open-hint">Нажмите на конверт</div>
+        </div>
+        <div class="terms fade-in">
+          <div class="term"><b>Один выбор</b>Подарок можно открыть только один раз на этом устройстве.</div>
+          <div class="term"><b>24 часа</b>Чтобы подарок сохранился, оформите запись в течение 24 часов.</div>
+          <div class="term"><b>Июль и август</b>Записаться можно на любую свободную дату в июле или августе.</div>
+        </div>
       </div>
+    </section>
 
-      <!-- Ribbon H (over body, under lid) -->
-      <div class="box-ribbon-h"></div>
-      <!-- Ribbon V (over everything) -->
-      <div class="box-ribbon-v"></div>
+    <section class="master section">
+      <div class="container master-grid">
+        <div class="master-photo fade-in"><img src="assets/svetlana.jpg" alt="Светлана Стригунова, мастер STRIGYNOVA HAIRCOLOR"></div>
+        <div class="fade-in">
+          <div class="eyebrow">Ваш мастер</div>
+          <h2>Светлана Стригунова</h2>
+          <p>Мастер по стрижкам, окрашиванию и уходу для волос. Работает с образом так, чтобы результат выглядел аккуратно в салоне и красиво в повседневной жизни.</p>
+          <div class="features">
+            <div class="feature"><b>Сложные окрашивания</b>Балаяж, шатуш, air touch, мелирование и тонирование.</div>
+            <div class="feature"><b>Стрижки</b>Форма, которую легко носить после визита.</div>
+            <div class="feature"><b>Уходы</b>Аминокислотное восстановление и «Абсолютное счастье Lebel».</div>
+            <div class="feature"><b>Запись онлайн</b>Свободные даты доступны через YCLIENTS.</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      <!-- Glow effect -->
-      <div class="box-glow"></div>
-      <!-- Shadow -->
-      <div class="box-shadow"></div>
+    <section class="final-cta">
+      <div class="container fade-in">
+        <h2>Готовы выбрать свой подарок?</h2>
+        <p>Вернитесь к конверту и откройте персональный бонус.</p>
+        <a class="btn" href="#gift-section">Открыть конверт</a>
+      </div>
+    </section>
+  </main>
+
+  <section id="result" class="result hidden">
+    <div class="container">
+      <div class="result-grid">
+        <div class="result-copy">
+          <div class="eyebrow">Подарок открыт</div>
+          <h2>Сохраните результат и оформите запись.</h2>
+          <p>Записаться можно на любую свободную дату в июле или августе. Главное — оформить запись до окончания таймера.</p>
+          <div class="result-icons"><div class="result-icon">Код подарка фиксируется</div><div class="result-icon">Таймер 24 часа</div><div class="result-icon">Скриншот для Светланы</div><div class="result-icon">Запись онлайн</div></div>
+        </div>
+        <div class="gift-card" id="giftCard">
+          <div class="card-brand">STRIGYNOVA</div>
+          <div class="card-eyebrow">Поздравляем</div>
+          <div class="gift-name" id="giftName">Ваш подарок</div>
+          <div class="gift-code" id="giftCode">#SHC000000</div>
+          <div class="timer">
+            <div class="timer-label">Подарок сгорит через</div>
+            <div class="timer-digits" id="timerDisplay">23:59:59</div>
+            <div class="bar"><span id="timerBar"></span></div>
+          </div>
+          <div class="notice">Сделайте скриншот этого экрана и отправьте Светлане после записи. Подарок сохраняется только при оформлении записи в течение 24 часов.</div>
+          <div class="actions"><a class="btn btn-primary" href="https://n2327853.yclients.com/" target="_blank" rel="noopener">Записаться и сохранить подарок</a><a class="btn btn-secondary" href="https://www.instagram.com/strigynova_haircolor?igsh=cGdxNHJxNjd0OTAw" target="_blank" rel="noopener">Написать в Instagram</a></div>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="tap-hint">нажмите на коробку</div>
-
-  <footer class="site-footer">© STRIGYNOVA HAIRCOLOR</footer>
-</div>
-
-
-<!-- ══════════════════════════════════════════
-     SCREEN 2: RESULT
-══════════════════════════════════════════ -->
-<div class="screen" id="screen-result">
-
-  <header class="site-header">
-    <div class="brand-eyebrow">Studio</div>
-    <div class="brand-name">STRIGYNOVA<br>HAIRCOLOR</div>
-    <div class="brand-divider"></div>
-  </header>
-
-  <!-- Gift Card -->
-  <div class="gift-card" id="giftCard">
-    <div class="gift-card-eyebrow">Специальное предложение</div>
-    <div class="gift-card-congrats">Поздравляем!</div>
-    <div class="gift-card-divider"></div>
-    <div class="gift-card-label">Ваш подарок</div>
-    <div class="gift-card-name" id="giftName">—</div>
-    <div class="gift-code-badge">
-      <span id="giftCode">#SHC0000</span>
+  <section id="expired" class="expired hidden">
+    <div class="expired-card">
+      <div class="brand"><strong>STRIGYNOVA</strong><span>HAIRCOLOR</span></div>
+      <h1>Срок подарка истёк</h1>
+      <p>24 часа прошли. Вы можете записаться на услугу без подарка или написать Светлане в Instagram.</p>
+      <div class="actions"><a class="btn btn-primary" href="https://n2327853.yclients.com/" target="_blank" rel="noopener">Записаться онлайн</a><a class="btn btn-secondary" style="color:white;border-color:rgba(255,255,255,.28)" href="https://www.instagram.com/strigynova_haircolor?igsh=cGdxNHJxNjd0OTAw" target="_blank" rel="noopener">Instagram</a></div>
     </div>
-    <div class="gift-card-note">Подарок действует 24 часа</div>
+  </section>
 
-    <div class="screenshot-hint">
-      📸 <strong>Сделайте скриншот этого экрана</strong><br>
-      и отправьте Светлане после записи
-    </div>
-  </div>
-
-  <!-- Timer -->
-  <div class="timer-block">
-    <div class="timer-label">Подарок сгорит через</div>
-    <div class="timer-digits" id="timerDisplay">23:59:59</div>
-    <div class="timer-bar-track">
-      <div class="timer-bar-fill" id="timerBar" style="width:100%"></div>
-    </div>
-    <div class="timer-sub">Оформите запись, чтобы сохранить подарок</div>
-  </div>
-
-  <!-- CTA Buttons -->
-  <a href="https://n2327853.yclients.com/" target="_blank" class="btn-primary">
-    Записаться и сохранить подарок
-  </a>
-
-  <a href="https://www.instagram.com/strigynova_haircolor?igsh=cGdxNHJxNjd0OTAw" target="_blank" class="btn-secondary">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-      <circle cx="12" cy="12" r="4"/>
-      <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
-    </svg>
-    Написать в Instagram
-  </a>
-
-  <footer class="site-footer">© STRIGYNOVA HAIRCOLOR</footer>
-</div>
-
-
-<!-- ══════════════════════════════════════════
-     SCREEN 3: EXPIRED
-══════════════════════════════════════════ -->
-<div class="screen" id="screen-expired">
-  <header class="site-header">
-    <div class="brand-eyebrow">Studio</div>
-    <div class="brand-name">STRIGYNOVA<br>HAIRCOLOR</div>
-    <div class="brand-divider"></div>
-  </header>
-
-  <div class="expired-icon">🌸</div>
-  <div class="expired-title">Срок подарка истёк</div>
-  <p class="expired-text">
-    К сожалению, 24 часа прошли.<br>
-    Будем рады видеть вас в следующий раз ❤️
-  </p>
-
-  <a href="https://n2327853.yclients.com/" target="_blank" class="btn-primary" style="margin-top: 36px;">
-    Записаться на услугу
-  </a>
-  <a href="https://www.instagram.com/strigynova_haircolor?igsh=cGdxNHJxNjd0OTAw" target="_blank" class="btn-secondary">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-      <circle cx="12" cy="12" r="4"/>
-      <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
-    </svg>
-    Написать в Instagram
-  </a>
-
-  <footer class="site-footer">© STRIGYNOVA HAIRCOLOR</footer>
-</div>
-
-
-<script>
-/* ══════════════════════════════════════════
-   GIFTS CONFIG
-══════════════════════════════════════════ */
-const GIFTS = [
-  { name: 'Скидка 10% на любую услугу',                          weight: 33 },
-  { name: 'Стрижка челки (2 500 ₽ в подарок)',                   weight: 25 },
-  { name: 'Аминокислотное восстановление (3 500 ₽ в подарок)',   weight: 15 },
-  { name: 'Скидка 15% на любую услугу',                          weight: 12 },
-  { name: 'Женская стрижка (5 000 ₽ в подарок)',                 weight: 10 },
-  { name: 'Уход «Абсолютное счастье Lebel» (6 000 ₽ в подарок)',weight:  5 },
-];
-const TOTAL_WEIGHT = GIFTS.reduce((s, g) => s + g.weight, 0);
-const DURATION_MS  = 24 * 60 * 60 * 1000; // 24h
-const LS_KEY       = 'shc_gift_v1';
-
-/* ══════════════════════════════════════════
-   UTILS
-══════════════════════════════════════════ */
-function randomGift() {
-  let r = Math.random() * TOTAL_WEIGHT;
-  for (const g of GIFTS) {
-    r -= g.weight;
-    if (r <= 0) return g;
-  }
-  return GIFTS[GIFTS.length - 1];
-}
-
-function generateCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return '#SHC' + Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
-
-function loadState() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch { return null; }
-}
-
-function saveState(state) {
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-}
-
-function formatTime(ms) {
-  if (ms <= 0) return '00:00:00';
-  const h = Math.floor(ms / 3_600_000);
-  const m = Math.floor((ms % 3_600_000) / 60_000);
-  const s = Math.floor((ms % 60_000) / 1_000);
-  return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
-}
-
-/* ══════════════════════════════════════════
-   SCREENS
-══════════════════════════════════════════ */
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-/* ══════════════════════════════════════════
-   RESULT SCREEN
-══════════════════════════════════════════ */
-let timerInterval = null;
-
-function showResult(state) {
-  document.getElementById('giftName').textContent = state.gift;
-  document.getElementById('giftCode').textContent = state.code;
-  showScreen('screen-result');
-
-  // animate card in
-  setTimeout(() => document.getElementById('giftCard').classList.add('visible'), 80);
-
-  startTimer(state.chosenAt);
-}
-
-function startTimer(chosenAt) {
-  if (timerInterval) clearInterval(timerInterval);
-
-  const update = () => {
-    const remaining = DURATION_MS - (Date.now() - chosenAt);
-    if (remaining <= 0) {
-      clearInterval(timerInterval);
-      showScreen('screen-expired');
-      return;
-    }
-    const pct = (remaining / DURATION_MS) * 100;
-    const el  = document.getElementById('timerDisplay');
-    el.textContent = formatTime(remaining);
-    el.classList.toggle('urgent', remaining < 3_600_000); // last hour
-    document.getElementById('timerBar').style.width = pct + '%';
-  };
-
-  update();
-  timerInterval = setInterval(update, 1000);
-}
-
-/* ══════════════════════════════════════════
-   OPEN BOX
-══════════════════════════════════════════ */
-function openBox() {
-  const box = document.getElementById('giftBox');
-  if (box.classList.contains('opened')) return;
-
-  box.classList.remove('idle');
-  box.classList.add('opened');
-  box.style.pointerEvents = 'none';
-
-  // vibrate on mobile
-  if (navigator.vibrate) navigator.vibrate([30, 30, 60]);
-
-  // confetti after slight delay
-  setTimeout(launchConfetti, 400);
-
-  // pick gift
-  const gift = randomGift();
-  const code = generateCode();
-  const state = { gift: gift.name, code, chosenAt: Date.now() };
-  saveState(state);
-
-  // transition to result screen
-  setTimeout(() => showResult(state), 900);
-}
-
-/* ══════════════════════════════════════════
-   CONFETTI
-══════════════════════════════════════════ */
-function launchConfetti() {
-  const canvas = document.getElementById('confetti-canvas');
-  const ctx    = canvas.getContext('2d');
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const colors = ['#C4A97A', '#E8D9BC', '#F2EDE6', '#3D3935', '#FFFFFF', '#D4AF7A'];
-  const pieces = Array.from({ length: 90 }, () => ({
-    x:    canvas.width  * Math.random(),
-    y:    -20 - Math.random() * 80,
-    w:    6 + Math.random() * 8,
-    h:    3 + Math.random() * 4,
-    r:    Math.random() * Math.PI * 2,
-    dr:   (Math.random() - 0.5) * 0.2,
-    vx:   (Math.random() - 0.5) * 3,
-    vy:   3 + Math.random() * 4,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    alpha: 1,
-  }));
-
-  let frame = 0;
-  const maxFrames = 140;
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    pieces.forEach(p => {
-      p.x  += p.vx;
-      p.y  += p.vy;
-      p.vy += 0.08; // gravity
-      p.r  += p.dr;
-      p.alpha = frame > maxFrames * 0.7
-        ? 1 - (frame - maxFrames * 0.7) / (maxFrames * 0.3)
-        : 1;
-
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, p.alpha);
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.r);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.restore();
-    });
-
-    frame++;
-    if (frame < maxFrames) requestAnimationFrame(draw);
-    else ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-  requestAnimationFrame(draw);
-}
-
-/* ══════════════════════════════════════════
-   INIT
-══════════════════════════════════════════ */
-(function init() {
-  const state = loadState();
-  if (!state) {
-    showScreen('screen-landing');
-    return;
-  }
-
-  const remaining = DURATION_MS - (Date.now() - state.chosenAt);
-  if (remaining <= 0) {
-    showScreen('screen-expired');
-  } else {
-    showResult(state);
-  }
-})();
-</script>
-
-<!-- YCLIENTS widget (loads silently) -->
-<script type="text/javascript" src="https://w2327853.yclients.com/widgetJS" charset="UTF-8"></script>
+  <script>
+    const GIFTS=[
+      {name:'Скидка 10% на любую услугу',weight:33},
+      {name:'Стрижка челки стоимостью 2 500 ₽ — в подарок',weight:25},
+      {name:'Аминокислотное восстановление стоимостью 3 500 ₽ — в подарок',weight:15},
+      {name:'Скидка 15% на любую услугу',weight:12},
+      {name:'Женская стрижка стоимостью 5 000 ₽ — в подарок',weight:10},
+      {name:'Уход «Абсолютное счастье Lebel» стоимостью 6 000 ₽ — в подарок',weight:5}
+    ];
+    const DURATION=24*60*60*1000, KEY='strigynova_gift_final_v1'; let timer;
+    const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+    function save(s){localStorage.setItem(KEY,JSON.stringify(s))} function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+    function chooseGift(){let total=GIFTS.reduce((a,g)=>a+g.weight,0),r=Math.random()*total;for(const g of GIFTS){r-=g.weight;if(r<=0)return g}return GIFTS.at(-1)}
+    function code(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return '#SHC'+Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join('')}
+    function fmt(ms){ms=Math.max(0,ms);let h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000);return [h,m,s].map(n=>String(n).padStart(2,'0')).join(':')}
+    function show(which){$('#landing').classList.toggle('hidden',which!=='landing');$('#result').classList.toggle('hidden',which!=='result');$('#expired').classList.toggle('hidden',which!=='expired');window.scrollTo({top:0,behavior:'smooth'})}
+    function showResult(st){$('#giftName').textContent=st.gift;$('#giftCode').textContent=st.code;show('result');startTimer(st.chosenAt)}
+    function startTimer(chosenAt){clearInterval(timer);function tick(){let left=DURATION-(Date.now()-chosenAt);if(left<=0){clearInterval(timer);show('expired');return}$('#timerDisplay').textContent=fmt(left);$('#timerDisplay').classList.toggle('urgent',left<3600000);$('#timerBar').style.width=(left/DURATION*100)+'%'}tick();timer=setInterval(tick,1000)}
+    function confetti(){const cv=$('#confetti'),ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;const colors=['#c9aa70','#ead7ac','#fffaf2','#ffffff','#8f6b32'];let pieces=Array.from({length:110},()=>({x:innerWidth*Math.random(),y:-30-Math.random()*80,w:4+Math.random()*8,h:3+Math.random()*5,vx:(Math.random()-.5)*3,vy:2+Math.random()*4,r:Math.random()*6,dr:(Math.random()-.5)*.2,co:colors[Math.floor(Math.random()*colors.length)],a:1}));let f=0;function draw(){ctx.clearRect(0,0,cv.width,cv.height);pieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.r+=p.dr;if(f>100)p.a-=.018;ctx.save();ctx.globalAlpha=Math.max(0,p.a);ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.co;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore()});f++;if(f<160)requestAnimationFrame(draw);else ctx.clearRect(0,0,cv.width,cv.height)}draw()}
+    function openGift(){let current=load();if(current){if(Date.now()-current.chosenAt>DURATION)show('expired');else showResult(current);return}const env=$('#envelope');env.classList.add('open');env.style.pointerEvents='none';if(navigator.vibrate)navigator.vibrate([25,30,60]);setTimeout(confetti,330);setTimeout(()=>{const gift=chooseGift();const st={gift:gift.name,code:code(),chosenAt:Date.now()};save(st);showResult(st)},1100)}
+    $('#envelope').addEventListener('click',openGift);$('#envelope').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGift()}});
+    const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});$$('.fade-in').forEach(el=>io.observe(el));
+    const st=load();if(st){if(Date.now()-st.chosenAt>DURATION)show('expired');else showResult(st)}
+  </script>
+  <script type="text/javascript" src="https://w2327853.yclients.com/widgetJS" charset="UTF-8"></script>
 </body>
 </html>
